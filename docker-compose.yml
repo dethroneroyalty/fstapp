@@ -1,0 +1,31 @@
+version: "3"
+
+services:
+  web:
+    build: .
+    command: ["yarn", "start"]
+    restart: always
+    env_file: .env
+    ports:
+      - "3000:3000"
+    volumes:
+      - "./config:/app/config"
+      - "./server:/app/server"
+    environment:
+      MONGODB_URL: "mongodb://mongodb/app"
+    depends_on:
+      - mongodb
+      - redisdb
+    links:
+      - mongodb
+      - redisdb
+
+  mongodb:
+    image: mongo:latest
+    volumes:
+      - "./data/mongodb:/data"
+
+  redisdb:
+    image: redis:alpine
+    volumes:
+      - "./data/redisdb:/data"
