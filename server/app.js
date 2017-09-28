@@ -6,10 +6,12 @@ const bodyParser = require("body-parser");
 const session = require("express-session");
 const RedisStore = require("connect-redis")(session);
 const winston = require("winston");
+const passport = require("passport");
 
 const { setConfig } = require("./utils");
 const setRoutes = require("./routes");
 const initModels = require("./models");
+const setPassport = require("./passport");
 
 const app = express();
 
@@ -47,6 +49,8 @@ async function init() {
   app.use(express.static(path.join(__dirname, "../public")));
 
   await initModels(app);
+  setPassport(app, passport);
+
   setRoutes(app);
 
   // catch 404 and forward to error handler
