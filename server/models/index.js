@@ -9,4 +9,5 @@ module.exports = async function(app) {
   app.set("mongoose", conn);
 
   require("./users")(app);
+  require("./articles")(app);
 };
