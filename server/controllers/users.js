@@ -9,7 +9,7 @@ module.exports = function UserController(app) {
 
     async load(req, res, next, _id) {
       try {
-        req.profile = await User.load({ _id });
+        req.profile = await User.load({ _id }).exec();
         if (!req.profile) return next(new Error("User not found"));
       } catch (e) {
         return next(err);
@@ -24,7 +24,7 @@ module.exports = function UserController(app) {
     show(req, res) {
       const { _id, name, email, type } = req.profile;
       res.json({
-        data: { id: _id, name, email, type }
+        data: { id: _id, type, attributes: { name, email } }
       });
     },
 
@@ -34,12 +34,17 @@ module.exports = function UserController(app) {
 
     async create(req, res) {
       try {
+        logger.debug(req.body);
         const user = new User(req.body);
         user.provider = "local";
         await user.setPassword(req.body.password);
         await user.save();
         res.json({
-          data: "Everything is cool"
+          data: {
+            type: "User",
+            id: user._id,
+            attributes: { name: user.name, email: user.email }
+          }
         });
       } catch (err) {
         res.json({
@@ -56,15 +61,12 @@ module.exports = function UserController(app) {
      */
 
     async find(req, res) {
-      let { limit = 30 } = req.query;
-      let users = await User.find()
-        .limit(limit)
-        .exec();
+      let { limit = 30, page = 0 } = req.query;
+      let users = await User.list({}, page * limit, limit | 0).exec();
       let data = users.map(({ _id, name, email, type }) => ({
         id: _id,
-        name,
-        email,
-        type
+        type,
+        attributes: { name, email }
       }));
       res.json({ data });
     }
