@@ -55,7 +55,7 @@ function init(app) {
   UserSchema.path("email").validate(isEmail, "Email has invalid form");
 
   UserSchema.path("email").validate({
-    isAsync: true,
+    // isAsync: true,
     async validator(email) {
       let User = this.collection.conn.model("User");
 
@@ -129,10 +129,23 @@ function init(app) {
      * @private
      */
 
-    load(criteria, select = { name: 1, email: 1 }) {
-      return this.findOne(criteria)
-        .select(select)
-        .exec();
+    load(query, select = { name: 1, email: 1 }) {
+      return this.findOne(query).select(select);
+    },
+
+    /** 
+     * List of users
+     *
+     * @param {Object} query
+     * @param {Number} skip
+     * @param {Number} limit 
+     * @return {Query}
+     */
+
+    list(query, skip = 0, limit = 30) {
+      return this.find(query)
+        .skip(skip)
+        .limit(limit);
     }
   };
 
