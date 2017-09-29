@@ -1,3 +1,5 @@
+const only = require("only");
+
 module.exports = function ArticlesController(app) {
   const Article = app.get("mongoose").model("Article");
 
@@ -39,6 +41,34 @@ module.exports = function ArticlesController(app) {
           pages: Math.ceil(count / limit)
         }
       });
+    },
+
+    /** 
+     * Create an article and upload an image
+     */
+
+    async create(req, res) {
+      const article = new Article(only(req.body, "title body tags"));
+      article.user = req.user;
+      try {
+        await article.uploadAndSave(req.file);
+        res.json({
+          data: article.map(({ title, body, _id: id, tags, comments }) => ({
+            title,
+            body,
+            id,
+            tags,
+            comments
+          }))
+        });
+      } catch (err) {
+        res.json({
+          error: {
+            title: err.toString(),
+            source: article
+          }
+        });
+      }
     }
   };
 };
